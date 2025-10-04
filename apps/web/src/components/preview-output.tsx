@@ -1,5 +1,6 @@
 "use client";
-import { Download, ImageIcon } from "lucide-react";
+import { Download, ImageIcon, ChevronDown, Copy } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	InputGroup,
@@ -9,7 +10,22 @@ import {
 import { Label } from "@/components/ui/label";
 import { formatName } from "@/lib/image-formats";
 import { cn } from "@/lib/utils";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuShortcut,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { ReactNode } from "react";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Kbd } from "./ui/kbd";
+import { toast } from "sonner";
 
 export interface PreviewResultMeta {
 	url: string;
@@ -59,6 +75,63 @@ export function PreviewOutput({
 }: PreviewOutputProps) {
 	const canDownload = !!result && !!baseName && !disabled;
 	const heightClass = `h-[${previewHeight}px]`;
+	const downloadAnchorRef = useRef<HTMLAnchorElement | null>(null);
+
+	// Keyboard shortcuts:
+	//  - Cmd/Ctrl+S: trigger download
+	//  - Cmd/Ctrl+C: copy image (when not focused in editable input/textarea/contenteditable)
+	useEffect(() => {
+		const handler = async (e: KeyboardEvent) => {
+			if (!canDownload || !result) return;
+			const isMac = navigator.platform.toLowerCase().includes("mac");
+			const metaActive = isMac ? e.metaKey : e.ctrlKey;
+			if (!metaActive) return;
+			const key = e.key.toLowerCase();
+
+			// allow native copy behavior inside editable areas (except still override save)
+			const active = document.activeElement as HTMLElement | null;
+			const inEditable =
+				!!active &&
+				(active.tagName === "INPUT" ||
+					active.tagName === "TEXTAREA" ||
+					active.isContentEditable);
+
+			if (key === "s") {
+				e.preventDefault();
+				const a = downloadAnchorRef.current;
+				if (a) a.click();
+				return;
+			}
+
+			if (key === "c" && !inEditable) {
+				// copy image blob to clipboard
+				e.preventDefault();
+				try {
+					const blob = await fetch(result.url).then((r) => r.blob());
+					await navigator.clipboard.write([
+						new window.ClipboardItem({ [blob.type]: blob }),
+					]);
+					toast.info("Image copied to clipboard");
+				} catch {
+					try {
+						const data = await fetch(result.url).then((r) => r.blob());
+						const reader = new FileReader();
+						reader.onload = async () => {
+							if (typeof reader.result === "string") {
+								await navigator.clipboard.writeText(reader.result);
+								toast.info("Image copied to clipboard");
+							}
+						};
+						reader.readAsDataURL(data);
+					} catch {
+						/* swallow */
+					}
+				}
+			}
+		};
+		window.addEventListener("keydown", handler);
+		return () => window.removeEventListener("keydown", handler);
+	}, [canDownload, result]);
 
 	return (
 		<div className={cn("space-y-4", className)}>
@@ -143,15 +216,106 @@ export function PreviewOutput({
 							{error && (
 								<p className="text-sm text-destructive font-medium">{error}</p>
 							)}
-							<Button asChild className="w-full h-10" disabled={!canDownload}>
-								<a
-									href={result?.url || undefined}
-									download={`${(baseName || "output").replace(/\.[^/.]+$/, "")}.${ext}`}
-									aria-disabled={!canDownload}
-								>
-									<Download className="mr-2 h-4 w-4" /> {downloadLabel}
-								</a>
-							</Button>
+							<div className="w-full">
+								<div className="flex w-full">
+									<TooltipProvider>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button
+													asChild
+													className="flex-1 h-10 rounded-r-none"
+													disabled={!canDownload}
+												>
+													<a
+														ref={downloadAnchorRef}
+														href={result?.url || undefined}
+														download={`${(baseName || "output").replace(/\.[^/.]+$/, "")}.${ext}`}
+														aria-disabled={!canDownload}
+													>
+														<Download className="mr-2 h-4 w-4" />
+														{downloadLabel}
+													</a>
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent
+												side="top"
+												className="flex items-center gap-2"
+											>
+												Download faster by pressing <Kbd>⌘S</Kbd>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button
+												type="button"
+												variant="default"
+												className="h-10 w-10 shrink-0 rounded-l-none p-0"
+												disabled={!canDownload}
+												aria-label="More actions"
+											>
+												<ChevronDown className="h-4 w-4" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end" className="min-w-[12rem]">
+											<DropdownMenuItem
+												onClick={async () => {
+													if (!result) return;
+													try {
+														const blob = await fetch(result.url).then((r) =>
+															r.blob(),
+														);
+														await navigator.clipboard.write([
+															new window.ClipboardItem({ [blob.type]: blob }),
+														]);
+														toast.info("Image copied to clipboard");
+													} catch (err) {
+														try {
+															const data = await fetch(result.url).then((r) =>
+																r.blob(),
+															);
+															const reader = new FileReader();
+															reader.onload = async () => {
+																if (typeof reader.result === "string") {
+																	await navigator.clipboard.writeText(
+																		reader.result,
+																	);
+																}
+															};
+															reader.readAsDataURL(data);
+															toast.info("Image copied to clipboard");
+														} catch {}
+													}
+												}}
+											>
+												Copy to clipboard
+												<DropdownMenuShortcut>
+													<Kbd>⌘C</Kbd>
+												</DropdownMenuShortcut>
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												onClick={() => {
+													if (!result) return;
+													window.open(
+														result.url,
+														"_blank",
+														"noopener,noreferrer",
+													);
+												}}
+											>
+												Open in new tab
+											</DropdownMenuItem>
+											<DropdownMenuItem
+												onClick={() => {
+													toast.info("Share not yet implemented");
+												}}
+											>
+												Share
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
+							</div>
 						</div>
 					</div>
 				) : (
