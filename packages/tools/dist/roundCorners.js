@@ -1,0 +1,8 @@
+export const roundCornersTool = {
+    id: "round-corners",
+    title: "Round Image Corners",
+    description: "Apply rounded corners to an image",
+    keywords: "image edit round corners radius",
+    icon: "SquareDashedBottomCode", // lucide icon name placeholder
+    group: "Images",
+};

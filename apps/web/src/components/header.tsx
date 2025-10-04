@@ -1,12 +1,14 @@
 "use client";
 import Link from "next/link";
 import { ModeToggle } from "./mode-toggle";
+import { CommandMenu, CommandSearchBar } from "./command-menu";
 
 export default function Header() {
 	const links = [{ to: "/", label: "Home" }] as const;
 
 	return (
 		<div>
+			<CommandMenu />
 			<div className="flex flex-row items-center justify-between px-2 py-1">
 				<nav className="flex gap-4 text-lg">
 					{links.map(({ to, label }) => {
@@ -18,6 +20,7 @@ export default function Header() {
 					})}
 				</nav>
 				<div className="flex items-center gap-2">
+					<CommandSearchBar />
 					<ModeToggle />
 				</div>
 			</div>

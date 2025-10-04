@@ -1,0 +1,167 @@
+"use client";
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import {
+	Command,
+	CommandDialog,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+	CommandSeparator,
+} from "./ui/command";
+import { tools } from "@imagetools/tools";
+import {
+	Replace,
+	SquareDashedBottomCode,
+	Search,
+	LogIn,
+	UserPlus,
+	Github,
+	LogOut,
+} from "lucide-react";
+import { InputGroup, InputGroupInput, InputGroupAddon } from "./ui/input-group";
+import { authActions } from "@/lib/command-actions";
+import { useAuth } from "@clerk/nextjs";
+import { Kbd } from "./ui/kbd";
+
+const iconMap: Record<
+	string,
+	React.ComponentType<{ size?: number; className?: string }>
+> = {
+	Replace,
+	SquareDashedBottomCode,
+	LogIn,
+	UserPlus,
+	Github,
+	LogOut,
+};
+
+export function CommandMenu() {
+	const [open, setOpen] = React.useState(false);
+	const router = useRouter();
+
+	React.useEffect(() => {
+		const down = (e: KeyboardEvent) => {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+				e.preventDefault();
+				setOpen((o) => !o);
+			}
+		};
+		document.addEventListener("keydown", down);
+		return () => document.removeEventListener("keydown", down);
+	}, []);
+
+	const groups = React.useMemo(() => {
+		const grouped: Record<string, typeof tools> = {};
+		for (const t of tools) {
+			const g = t.group || "General";
+			grouped[g] ||= [] as any;
+			grouped[g].push(t);
+		}
+		return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
+	}, []);
+
+	const { isSignedIn } = useAuth();
+	const visibleActions = React.useMemo(
+		() =>
+			authActions.filter((a) => {
+				if (a.requiresAuth && !isSignedIn) return false;
+				if (a.unauthOnly && isSignedIn) return false;
+				return true;
+			}),
+		[isSignedIn],
+	);
+
+	return (
+		<CommandDialog open={open} onOpenChange={setOpen}>
+			<Command>
+				<CommandInput placeholder="Search tools..." />
+				<CommandList>
+					<CommandEmpty>No tools found.</CommandEmpty>
+					{groups.map(([group, items]) => (
+						<CommandGroup key={group} heading={group}>
+							{items.map((item) => {
+								const Icon = item.icon ? iconMap[item.icon] : Search;
+								return (
+									<CommandItem
+										key={item.id}
+										value={`${item.title} ${item.keywords || ""}`}
+										onSelect={() => {
+											setOpen(false);
+											router.push(`/tools/${item.id}` as any);
+										}}
+									>
+										<Icon size={16} className="shrink-0" />
+										<span>{item.title}</span>
+										{item.description && (
+											<span className="ml-auto pl-2 text-xs text-muted-foreground line-clamp-1">
+												{item.description}
+											</span>
+										)}
+									</CommandItem>
+								);
+							})}
+						</CommandGroup>
+					))}
+					<CommandSeparator />
+					<CommandGroup heading="Actions">
+						{visibleActions.map((action) => {
+							const Icon =
+								action.icon && iconMap[action.icon]
+									? iconMap[action.icon]
+									: Search;
+							return (
+								<CommandItem
+									key={action.id}
+									value={`${action.title} ${action.keywords || ""}`}
+									onSelect={() => {
+										setOpen(false);
+										if (action.href) {
+											if (action.href.startsWith("http")) {
+												window.open(action.href, "_blank");
+											} else {
+												router.push(action.href as any);
+											}
+										}
+									}}
+								>
+									<Icon size={16} className="shrink-0" />
+									<span>{action.title}</span>
+									{action.description && (
+										<span className="ml-auto pl-2 text-xs text-muted-foreground line-clamp-1">
+											{action.description}
+										</span>
+									)}
+								</CommandItem>
+							);
+						})}
+					</CommandGroup>
+				</CommandList>
+			</Command>
+		</CommandDialog>
+	);
+}
+
+export function CommandSearchBar() {
+	return (
+		<div
+			className="cursor-pointer"
+			onClick={() => {
+				const ev = new KeyboardEvent("keydown", { key: "k", metaKey: true });
+				document.dispatchEvent(ev);
+			}}
+		>
+			<InputGroup>
+				<InputGroupInput placeholder="Search..." disabled />
+				<InputGroupAddon>
+					<Search />
+				</InputGroupAddon>
+				<InputGroupAddon align="inline-end">
+					<Kbd>⌘K</Kbd>
+				</InputGroupAddon>
+			</InputGroup>
+		</div>
+	);
+}
