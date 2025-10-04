@@ -33,7 +33,7 @@ export function ImageDropzone({
 	accept = "image/*",
 	aspect = "aspect-video",
 	emptyHintTitle = "Choose an image",
-	emptyHintSubtitle = "or drag and drop",
+	emptyHintSubtitle = "drag and drop or paste (Ctrl/Cmd+V)",
 	id = "image-dropzone-input",
 	disabled = false,
 	initialFile = null,
@@ -82,6 +82,28 @@ export function ImageDropzone({
 		e.preventDefault();
 		handleSelect(e.dataTransfer.files?.[0] || null);
 	};
+
+	// Handle paste
+	useEffect(() => {
+		if (disabled) return;
+		const onPaste = (e: ClipboardEvent) => {
+			if (disabled) return;
+			if (!e.clipboardData) return;
+			const items = Array.from(e.clipboardData.items);
+			const fileItem = items.find(
+				(it) => it.kind === "file" && it.type.startsWith("image/"),
+			);
+			if (fileItem) {
+				const f = fileItem.getAsFile();
+				if (f) {
+					e.preventDefault();
+					handleSelect(f);
+				}
+			}
+		};
+		document.addEventListener("paste", onPaste);
+		return () => document.removeEventListener("paste", onPaste);
+	}, [handleSelect, disabled]);
 
 	return (
 		<div
