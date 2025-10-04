@@ -228,28 +228,8 @@ export default function RoundCornersPage() {
 						onFileSelect={(f) => handleSelectFile(f)}
 						onClear={reset}
 						aspect="aspect-video"
+						showMetadata={true}
 					/>
-					{fileObj && imageMeta && (
-						<div className="space-y-2 rounded-lg border bg-muted/50 p-4">
-							<p className="text-xs font-medium text-muted-foreground">
-								Original Image
-							</p>
-							<div className="grid grid-cols-2 gap-2 text-sm">
-								<div className="space-y-1">
-									<p className="text-xs text-muted-foreground">Dimensions</p>
-									<p className="font-medium">
-										{imageMeta.width} × {imageMeta.height}
-									</p>
-								</div>
-								<div className="space-y-1">
-									<p className="text-xs text-muted-foreground">Size</p>
-									<p className="font-medium">
-										{(imageMeta.size / 1024).toFixed(1)} KB
-									</p>
-								</div>
-							</div>
-						</div>
-					)}
 					<div className="space-y-4 rounded-lg border p-4">
 						<div className="space-y-2">
 							<Label className="text-sm font-medium">Corner Radius</Label>
