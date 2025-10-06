@@ -12,33 +12,12 @@ import {
 	CommandSeparator,
 } from "./ui/command";
 import { tools } from "@imagetools/tools";
-import {
-	Replace,
-	SquareDashedBottomCode,
-	Search,
-	LogIn,
-	UserPlus,
-	Github,
-	LogOut,
-	SquareRoundCorner,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import { InputGroup, InputGroupInput, InputGroupAddon } from "./ui/input-group";
 import { authActions } from "@/lib/command-actions";
 import { useAuth } from "@clerk/nextjs";
 import { Kbd } from "./ui/kbd";
-
-const iconMap: Record<
-	string,
-	React.ComponentType<{ size?: number; className?: string }>
-> = {
-	Replace,
-	SquareDashedBottomCode,
-	LogIn,
-	UserPlus,
-	Github,
-	LogOut,
-	SquareRoundCorner,
-};
+import { getIcon } from "@/lib/icon-map";
 
 export function CommandMenu() {
 	const [open, setOpen] = React.useState(false);
@@ -85,7 +64,7 @@ export function CommandMenu() {
 					{groups.map(([group, items]) => (
 						<CommandGroup key={group} heading={group}>
 							{items.map((item) => {
-								const Icon = (item.icon && iconMap[item.icon]) || Search;
+								const Icon = getIcon(item.icon);
 								return (
 									<CommandItem
 										key={item.id}
@@ -110,10 +89,7 @@ export function CommandMenu() {
 					<CommandSeparator />
 					<CommandGroup heading="Actions">
 						{visibleActions.map((action) => {
-							const Icon =
-								action.icon && iconMap[action.icon]
-									? iconMap[action.icon]
-									: Search;
+							const Icon = getIcon(action.icon);
 							return (
 								<CommandItem
 									key={action.id}

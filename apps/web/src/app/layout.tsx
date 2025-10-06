@@ -3,7 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../index.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Providers from "@/components/providers";
-import Header from "@/components/header";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { CommandMenu } from "@/components/command-menu";
+import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -32,10 +35,13 @@ export default function RootLayout({
 			>
 				<ClerkProvider>
 					<Providers>
-						<div className="grid grid-rows-[auto_1fr] h-svh">
-							<Header />
-							{children}
-						</div>
+						<SidebarProvider>
+							<AppSidebar />
+							<SidebarInset>
+								<CommandMenu />
+								{children}
+							</SidebarInset>
+						</SidebarProvider>
 					</Providers>
 				</ClerkProvider>
 			</body>
