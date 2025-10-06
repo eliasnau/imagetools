@@ -16,6 +16,11 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function NavUser() {
 	const { user, isSignedIn, isLoaded } = useUser();
@@ -42,12 +47,22 @@ export function NavUser() {
 		return (
 			<SidebarMenu>
 				<SidebarMenuItem>
-					<SignInButton mode="modal">
-						<SidebarMenuButton size="lg">
-							<LogIn className="size-4" />
-							<span>Sign In</span>
-						</SidebarMenuButton>
-					</SignInButton>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<SignInButton mode="modal">
+								<SidebarMenuButton size="lg">
+									<LogIn className="size-4" />
+									<span>Sign In</span>
+								</SidebarMenuButton>
+							</SignInButton>
+						</TooltipTrigger>
+						<TooltipContent side="right">
+							<p>Most tools work without sign-up</p>
+							<p className="text-xs text-muted-foreground">
+								Only server-side features require authentication
+							</p>
+						</TooltipContent>
+					</Tooltip>
 				</SidebarMenuItem>
 			</SidebarMenu>
 		);

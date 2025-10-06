@@ -14,8 +14,8 @@ import {
 import { tools } from "@imagetools/tools";
 import { Search } from "lucide-react";
 import { InputGroup, InputGroupInput, InputGroupAddon } from "./ui/input-group";
-import { authActions } from "@/lib/command-actions";
-import { useAuth } from "@clerk/nextjs";
+
+import { useClerk } from "@clerk/nextjs";
 import { Kbd } from "./ui/kbd";
 import { getIcon } from "@/lib/icon-map";
 
@@ -44,15 +44,63 @@ export function CommandMenu() {
 		return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
 	}, []);
 
-	const { isSignedIn } = useAuth();
+	const { isSignedIn, signOut } = useClerk();
+
+	const actions = React.useMemo(
+		() => [
+			{
+				id: "sign-in",
+				title: "Sign In",
+				description: "Authenticate and access your account",
+				keywords: "login authenticate",
+				icon: "LogIn",
+				group: "Auth",
+				href: "/sign-in",
+				unauthOnly: true,
+			},
+			{
+				id: "sign-up",
+				title: "Sign Up",
+				description: "Create a new imagetools account",
+				keywords: "register create account",
+				icon: "UserPlus",
+				group: "Auth",
+				href: "/sign-up",
+				unauthOnly: true,
+			},
+			{
+				id: "sign-out",
+				title: "Sign Out",
+				description: "End your current session",
+				keywords: "logout signout",
+				icon: "LogOut",
+				group: "Auth",
+				requiresAuth: true,
+				run: async () => {
+					await signOut();
+				},
+			},
+			{
+				id: "github",
+				title: "View Source Code on GitHub",
+				description: "Open the project repository",
+				keywords: "github source code repository",
+				icon: "Github",
+				group: "Project",
+				href: "https://github.com/eliasnau/imagetools",
+			},
+		],
+		[signOut],
+	);
+
 	const visibleActions = React.useMemo(
 		() =>
-			authActions.filter((a) => {
+			actions.filter((a) => {
 				if (a.requiresAuth && !isSignedIn) return false;
 				if (a.unauthOnly && isSignedIn) return false;
 				return true;
 			}),
-		[isSignedIn],
+		[isSignedIn, actions],
 	);
 
 	return (
@@ -94,9 +142,11 @@ export function CommandMenu() {
 								<CommandItem
 									key={action.id}
 									value={`${action.title} ${action.keywords || ""}`}
-									onSelect={() => {
+									onSelect={async () => {
 										setOpen(false);
-										if (action.href) {
+										if (action.run) {
+											await action.run();
+										} else if (action.href) {
 											if (action.href.startsWith("http")) {
 												window.open(action.href, "_blank");
 											} else {

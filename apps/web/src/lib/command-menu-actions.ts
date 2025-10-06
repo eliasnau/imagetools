@@ -1,6 +1,6 @@
 import type { CommandAction } from "./types";
 
-export const authActions: CommandAction[] = [
+export const commandActions: CommandAction[] = [
 	{
 		id: "sign-in",
 		title: "Sign In",
@@ -29,7 +29,6 @@ export const authActions: CommandAction[] = [
 		icon: "LogOut",
 		group: "Auth",
 		requiresAuth: true,
-		href: "/sign-out", 
 	},
 	{
 		id: "github",

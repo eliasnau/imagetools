@@ -6,6 +6,7 @@ import Providers from "@/components/providers";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { CommandMenu } from "@/components/command-menu";
+import { Topbar } from "@/components/topbar";
 import NextTopLoader from "nextjs-toploader";
 
 const geistSans = Geist({
@@ -40,6 +41,7 @@ export default function RootLayout({
 							<AppSidebar />
 							<SidebarInset>
 								<CommandMenu />
+								<Topbar />
 								{children}
 							</SidebarInset>
 						</SidebarProvider>
