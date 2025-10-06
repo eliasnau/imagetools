@@ -5,6 +5,6 @@ export const roundCornersTool: CommandTool = {
 	title: "Round Image Corners",
 	description: "Apply rounded corners to an image",
 	keywords: "image edit round corners radius",
-	icon: "SquareDashedBottomCode", // lucide icon name placeholder
+	icon: "SquareRoundCorner",
 	group: "Images",
 };
