@@ -55,6 +55,7 @@ interface PreviewOutputProps {
 	previewHeight?: number; // px height for preview box
 	className?: string;
 	footerNote?: ReactNode; // optional note below card
+	hideImagePreview?: boolean; // when true, skip rendering visual image box
 }
 
 export function PreviewOutput({
@@ -72,6 +73,7 @@ export function PreviewOutput({
 	previewHeight = 420,
 	className,
 	footerNote,
+	hideImagePreview = false,
 }: PreviewOutputProps) {
 	const canDownload = !!result && !!baseName && !disabled;
 	const heightClass = `h-[${previewHeight}px]`;
@@ -124,7 +126,6 @@ export function PreviewOutput({
 						};
 						reader.readAsDataURL(data);
 					} catch {
-						/* swallow */
 					}
 				}
 			}
@@ -142,18 +143,20 @@ export function PreviewOutput({
 				</div>
 				{result ? (
 					<div className="space-y-4">
-						<div
-							className={cn(
-								"flex w-full items-center justify-center overflow-hidden rounded-lg border bg-muted",
-								heightClass,
-							)}
-						>
-							<img
-								src={result.url}
-								alt={title}
-								className="h-full w-full object-contain p-4"
-							/>
-						</div>
+						{!hideImagePreview && (
+							<div
+								className={cn(
+									"flex w-full items-center justify-center overflow-hidden rounded-lg border bg-muted",
+									heightClass,
+								)}
+							>
+								<img
+									src={result.url}
+									alt={title}
+									className="h-full w-full object-contain p-4"
+								/>
+							</div>
+						)}
 						<div className="space-y-4">
 							<div className="space-y-2">
 								<Label

@@ -9,6 +9,7 @@ import {
 	SquareRoundCorner,
 	Image,
 	LayoutGrid,
+	Info,
 } from "lucide-react";
 
 export const iconMap: Record<
@@ -25,6 +26,7 @@ export const iconMap: Record<
 	Image,
 	LayoutGrid,
 	Search,
+	Info,
 };
 
 export function getIcon(iconName?: string) {
