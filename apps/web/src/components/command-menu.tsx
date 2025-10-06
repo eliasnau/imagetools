@@ -20,6 +20,7 @@ import {
 	UserPlus,
 	Github,
 	LogOut,
+	SquareRoundCorner,
 } from "lucide-react";
 import { InputGroup, InputGroupInput, InputGroupAddon } from "./ui/input-group";
 import { authActions } from "@/lib/command-actions";
@@ -36,6 +37,7 @@ const iconMap: Record<
 	UserPlus,
 	Github,
 	LogOut,
+	SquareRoundCorner,
 };
 
 export function CommandMenu() {
@@ -83,7 +85,7 @@ export function CommandMenu() {
 					{groups.map(([group, items]) => (
 						<CommandGroup key={group} heading={group}>
 							{items.map((item) => {
-								const Icon = item.icon ? iconMap[item.icon] : Search;
+								const Icon = (item.icon && iconMap[item.icon]) || Search;
 								return (
 									<CommandItem
 										key={item.id}
